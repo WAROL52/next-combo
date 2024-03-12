@@ -1,0 +1,228 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DatabaseSetting {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  description String? ///[$DatabaseDescription]
+  label       String?
+  key         String  @unique
+  value       Json? ///[$DatabaseSettingValue]
+  valueType   Json? ///[$DatabaseSettingValueType]
+}
+
+model DatabaseUser {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  username            String
+  Bio                 Json?
+  avatar              String?
+  cover               String?
+  notificationSetting Json?
+
+  DatabaseAccount   DatabaseAccount @relation(fields: [databaseAccountId], references: [id])
+  databaseAccountId Int             @unique
+
+  DatabaseLogs DatabaseLog[]
+}
+
+///.label("photo")
+model DatabaseAccount {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ///.email("vdvdfvdfvdfvdfb ")
+  ///.max(23, "la valeur ne doit pas depaser ${max} hors vous avez entrez ${input}")
+  ///.min(3, "la valeur ne doit pas depaser ${max} hors vous avez entrez ${input}")
+  email String @unique
+
+  ///.label = Rolio
+  ///.tooltips = je suis un tooltips
+  icon String? ///[$DatabaseIcon]
+
+  DatabaseUser DatabaseUser?
+
+  DatabaseAccountType   DatabaseAccountType @relation(fields: [databaseAccountTypeId], references: [id])
+  databaseAccountTypeId Int
+
+  DatabasePermissions   DatabasePermission[]
+  DatabasePages         DatabasePage[]
+  DatabaseLayouts       DatabaseLayout[]
+  DatabaseEvents        DatabaseEvent[]
+  DatabaseNotifications DatabaseNotification[]
+}
+
+model DatabaseAccountType {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  description         String? ///[$DatabaseDescription]
+  icon                String? ///[$DatabaseIcon]
+  name                String
+  DatabaseInterface   DatabaseInterface @relation(fields: [databaseInterfaceId], references: [id])
+  databaseInterfaceId Int
+
+  DatabaseAccounts      DatabaseAccount[]
+  DatabasePages         DatabasePage[]
+  DatabaseLayouts       DatabaseLayout[]
+  DatabaseEvents        DatabaseEvent[]
+  DatabaseNotifications DatabaseNotification[]
+}
+
+model DatabaseLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  schemaSelector   String ///[$SchemaSelectorUnique]
+  prismaDataId     Int ///[$PrismaDataId]
+  prismaActionArgs Json ///[$PrismaActionArgs]
+
+  DatabaseSchemaSelector   DatabaseSchemaSelector @relation(fields: [databaseSchemaSelectorId], references: [id])
+  databaseSchemaSelectorId Int
+  DatabaseUser             DatabaseUser           @relation(fields: [databaseUserId], references: [id])
+  databaseUserId           Int
+
+  @@index([schemaSelector])
+}
+
+model DatabasePermission {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  description String? ///[$DatabaseDescription]
+  icon        String? ///[$DatabaseIcon]
+
+  name  String @unique
+  level Int    @unique
+
+  DatabaseSchemaSelectors DatabaseSchemaSelector[]
+  DatabaseAccounts        DatabaseAccount[]
+}
+
+model DatabaseSchemaSelector {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  schemaSelector String  @unique ///[$SchemaSelectorUnique]
+  description    String?
+  label          String?
+  tooltips       String?
+  icon           String? ///[$DatabaseIcon]
+  color          String? ///[$XColor]
+  bgColor        String? ///[$XColor]
+
+  DatabasePermissions DatabasePermission[]
+  DatabaseLogs        DatabaseLog[]
+  DatabaseEvents      DatabaseEvent[]
+}
+
+model DatabaseEvent {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  description String? ///[$DatabaseDescription]
+
+  name            String  @unique
+  icon            String? ///[$DatabaseIcon]
+  messageTemplate Json ///[$DatabaseEventMessageTemplate]
+
+  DatabaseSchemaSelectors DatabaseSchemaSelector[]
+  DatabaseAccounts        DatabaseAccount[]
+  DatabaseAccountTypes    DatabaseAccountType[]
+  DatabaseNotifications   DatabaseNotification[]
+}
+
+model DatabaseNotification {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  message Json ///[$DatabaseEventMessage]
+
+  DatabaseEvent   DatabaseEvent @relation(fields: [databaseEventId], references: [id])
+  databaseEventId Int
+
+  DatabaseAccounts     DatabaseAccount[]
+  DatabaseAccountTypes DatabaseAccountType[]
+}
+
+model DatabaseInterface {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  description String? ///[$DatabaseDescription]
+  icon        String? ///[$DatabaseIcon]
+  name        String  @unique
+
+  DatabasePages        DatabasePage[]
+  DatabaseLayouts      DatabaseLayout[]
+  DatabaseAccountTypes DatabaseAccountType[]
+}
+
+model DatabaseLayout {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String  @unique
+  address     String ///[$UrlAddressName]
+  schemaName  String ///[$PrismaSchemaName]
+  icon        String? ///[$DatabaseIcon]
+  description String? ///[$DatabaseDescription]
+  title       String? ///[$DatabaseTitle]
+  color       String? ///[$XColor]
+  bgColor     String? ///[$XColor]
+
+  DatabasePages        DatabasePage[]
+  DatabaseInterfaces   DatabaseInterface[]
+  DatabaseAccounts     DatabaseAccount[]
+  DatabaseAccountTypes DatabaseAccountType[]
+
+  @@index([address])
+  @@index([schemaName])
+}
+
+model DatabasePage {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String   @unique
+  address     String ///[$UrlAddressName]
+  schemaName  String ///[$PrismaSchemaName]
+  icon        String? ///[$DatabaseIcon]
+  description String? ///[$DatabaseDescription]
+  title       String? ///[$DatabaseTitle]
+  color       String? ///[$XColor]
+  bgColor     String? ///[$XColor]
+  menu        String[] ///[$PrismaSchemaNames]
+
+  DatabaseLayouts      DatabaseLayout[]
+  DatabaseInterfaces   DatabaseInterface[]
+  DatabaseAccounts     DatabaseAccount[]
+  DatabaseAccountTypes DatabaseAccountType[]
+
+  @@index([address])
+  @@index([schemaName])
+}

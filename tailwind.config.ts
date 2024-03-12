@@ -6,6 +6,24 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  important: true,
+  safelist: [
+    {
+      pattern: /.+/,
+    },
+    {
+      pattern: /from-(.+)-500/,
+      variants: ["hover", "focus"],
+    },
+    {
+      pattern: /to-(.+)-500/,
+      variants: ["hover", "focus"],
+    },
+    {
+      pattern: /bg-(.+)-(.+)/,
+      variants: ["hover", "focus"],
+    },
+  ],
   theme: {
     extend: {
       backgroundImage: {
